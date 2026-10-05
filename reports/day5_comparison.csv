@@ -1,0 +1,8 @@
+Model,Accuracy,Precision,Recall,F1,ROC-AUC,CV AUC
+Logistic Regression,0.808,0.583,0.189,0.286,0.774,0.762
+Logistic Regression (balanced),0.714,0.388,0.708,0.501,0.777,0.765
+Decision Tree,0.858,0.796,0.403,0.535,0.844,0.827
+Random Forest,0.863,0.767,0.469,0.582,0.851,0.844
+Random Forest (tuned),0.865,0.791,0.457,0.579,0.862,0.858
+Gradient Boosting,0.866,0.782,0.477,0.592,0.87,0.863
+XGBoost,0.872,0.805,0.486,0.606,0.871,0.864
