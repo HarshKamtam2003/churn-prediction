@@ -1,0 +1,17 @@
+,SHAP importance,SHAP direction,LogReg coef,LogReg direction,SHAP rank,LogReg rank
+Age,0.786,+,0.696,+,1,3
+NumOfProducts,0.736,-,-0.124,-,2,8
+EngagementProduct,0.325,-,0.272,+,3,5
+Geography_Germany,0.256,+,0.816,+,4,2
+Gender_Male,0.212,-,-0.524,-,5,4
+Balance,0.102,+,0.16,+,6,7
+BalanceSalaryRatio,0.101,+,0.16,+,7,6
+EstimatedSalary,0.064,+,0.053,+,8,12
+IsActiveMember,0.056,-,-1.494,-,9,1
+CreditScore,0.048,-,-0.088,-,10,9
+AgeByTenure,0.043,+,0.076,+,11,10
+AgeTenure,0.026,+,0.045,+,12,14
+ProductDensity,0.02,+,-0.037,-,13,15
+Geography_Spain,0.007,+,0.051,+,14,13
+HasCrCard,0.005,-,-0.071,-,15,11
+Tenure,0.001,+,-0.03,-,16,16
