@@ -1,4 +1,4 @@
-"""Bank churn dashboard, version 1.
+"""Bank churn dashboard, version 2 (with What-If Simulator).
 Run from the project folder:  streamlit run app/app.py
 """
 import sys
@@ -55,6 +55,18 @@ def risk_label(p: float) -> str:
     return "Medium" if p >= THRESHOLD / 2 else "Low"
 
 
+def caution_notes(c: pd.DataFrame) -> list:
+    """Plain-language warnings for unusual customers (the model has seen few like them)."""
+    r, notes = c.iloc[0], []
+    if r["Age"] < 21 or r["Age"] > 75:
+        notes.append("Very young or very old customers are rare in the data, so this estimate is less reliable.")
+    if r["NumOfProducts"] == 4:
+        notes.append("Only 60 customers in the data held 4 products, so this estimate is less reliable.")
+    if r["EstimatedSalary"] == 0:
+        notes.append("A salary of 0 is unusual; the balance-to-salary feature is set to 0 in this case.")
+    return notes
+
+
 # ------------------------------------------------------------------ pages
 def page_risk_calculator():
     st.header("Risk Calculator")
@@ -78,6 +90,7 @@ def page_risk_calculator():
                 v = int(v)
             st.session_state[f"in_{k}"] = v
         st.session_state["loaded_actual"] = int(row["Exited"])
+        st.session_state["loaded_sig"] = tuple(st.session_state[f"in_{k}"] for k in FEATURES)
 
     with st.expander("Load a customer from the test set (to compare with the notebook)"):
         c1, c2 = st.columns([1, 3])
@@ -116,7 +129,9 @@ def page_risk_calculator():
     {"High": st.error, "Medium": st.warning, "Low": st.success}[label](
         f"{label} risk. The flag turns on at a probability of {THRESHOLD:.0%} or more.")
     st.caption(f"Exact probability: {p:.4f}")
-    if "loaded_actual" in s:
+    for note in caution_notes(customer):
+        st.warning(note)
+    if s.get("loaded_sig") == tuple(s[f"in_{k}"] for k in FEATURES):
         st.caption("Loaded test customer. In the data this customer "
                    + ("left the bank." if s["loaded_actual"] == 1 else "stayed with the bank."))
 
@@ -169,8 +184,54 @@ def page_feature_importance():
 
 def page_what_if():
     st.header("What-If Simulator")
-    st.info("Coming next: pick a customer, change activity, products, balance or tenure, "
-            "and see the risk before and after.")
+    st.caption("How to read: pick a customer, then change things the bank could influence (activity, products, "
+               "balance, tenure). The 'After' bar shows how the model's churn estimate would move. "
+               "It shows what the model expects, not a guaranteed result.")
+    _, test_df = load_customers()
+    row_i = int(st.number_input("Test customer row number (0 to 1999)", 0, 1999, 501, key="wi_row"))
+    base = test_df.iloc[row_i]
+    k = f"wi{row_i}"  # new keys per customer, so the controls reset when the customer changes
+    st.caption(f"Customer {row_i}: age {int(base.Age)}, {base.Geography}, {base.Gender}, "
+               f"{int(base.NumOfProducts)} product(s), balance {base.Balance:,.0f}, "
+               f"{'active' if base.IsActiveMember else 'inactive'}, tenure {int(base.Tenure)} years.")
+
+    c1, c2 = st.columns(2)
+    active = c1.checkbox("Active member", value=bool(base.IsActiveMember), key=f"{k}_act")
+    products = c1.slider("Number of products", 1, 4, int(base.NumOfProducts), key=f"{k}_prod")
+    balance = c2.number_input("Account balance", 0.0, 300000.0, float(base.Balance), step=1000.0, key=f"{k}_bal")
+    tenure = c2.slider("Tenure (years with the bank)", 0, 10, int(base.Tenure), key=f"{k}_ten")
+
+    before = pd.DataFrame([base[FEATURES].to_dict()])
+    after = before.copy()
+    after.loc[0, "IsActiveMember"] = int(active)
+    after.loc[0, "NumOfProducts"] = int(products)
+    after.loc[0, "Balance"] = float(balance)
+    after.loc[0, "Tenure"] = int(tenure)
+    p0 = float(pipe.predict_proba(before)[:, 1][0])
+    p1 = float(pipe.predict_proba(after)[:, 1][0])
+
+    st.divider()
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Before", f"{p0:.1%}")
+    m2.metric("After", f"{p1:.1%}", f"{(p1 - p0) * 100:+.1f} points", delta_color="inverse")
+    m3.metric("Risk level", f"{risk_label(p0)} to {risk_label(p1)}")
+
+    fig, ax = plt.subplots(figsize=(8, 2.6))
+    colors = {"High": "#E45756", "Medium": "#F2B84B", "Low": "#54A24B"}
+    ax.barh(["After", "Before"], [p1, p0], color=[colors[risk_label(p1)], colors[risk_label(p0)]])
+    ax.axvline(THRESHOLD, color="black", linestyle="--", label=f"Flag threshold {THRESHOLD:.2f}")
+    ax.set_xlim(0, 1); ax.set_xlabel("Churn probability")
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.45), frameon=False)
+    fig.tight_layout(); st.pyplot(fig); plt.close(fig)
+
+    if abs(p1 - p0) < 1e-9:
+        st.info("No changes yet. Adjust the controls above to see the effect.")
+    else:
+        direction = "fall" if p1 < p0 else "rise"
+        st.write(f"The model expects the churn probability to **{direction}** from **{p0:.1%}** to **{p1:.1%}** "
+                 f"({(p1 - p0) * 100:+.1f} points).")
+    for note in caution_notes(after):
+        st.warning(note)
 
 
 # ------------------------------------------------------------------ menu
