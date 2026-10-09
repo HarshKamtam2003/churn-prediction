@@ -62,3 +62,7 @@ streamlit run app/app.py
 ## Limitations
 
 Single dataset, no time dimension, estimated salary may be synthetic, and results may not generalise to other banks. The dashboard is a demonstration and should not be used for real customer decisions.
+
+## Data source
+
+European_Bank.csv (10,000 retail bank customer records) was downloaded from the project portal of the author's company in October 2026. It is a practice dataset.
