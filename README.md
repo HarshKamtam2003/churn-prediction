@@ -2,7 +2,7 @@
 
 A model and dashboard that predict which bank customers are likely to leave, give each customer a churn probability, and explain the main drivers, so a bank can contact the right customers before they go.
 
-**Live dashboard:** https://bank-churn-data-model.streamlit.app
+**Live dashboard:** https://churndatamodel.streamlit.app
 
 ## Headline results
 

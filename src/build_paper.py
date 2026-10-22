@@ -29,7 +29,7 @@ args = ap.parse_args()
 FIGS = ROOT / "reports" / "figures"
 REP = ROOT / "reports"
 NAVY = RGBColor(0x1F, 0x3A, 0x5F)
-APP_URL = "https://bank-churn-data-model.streamlit.app"
+APP_URL = "https://churndatamodel.streamlit.app"
 TITLE = "Predictive Churn Intelligence for Retail Banking"
 SUBTITLE = "Identifying and explaining customer attrition with machine learning"
 
