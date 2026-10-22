@@ -1,0 +1,6 @@
+Group,Customers,Actual churn %,Flagged %,Recall %,Precision %
+Gender: Female,930,25.1,28.8,71.2,61.9
+Gender: Male,1070,16.3,17.3,62.6,58.9
+Geography: France,1021,17.1,17.4,61.1,60.1
+Geography: Germany,504,30.0,37.9,78.1,61.8
+Geography: Spain,475,17.1,17.7,61.7,59.5

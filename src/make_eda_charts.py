@@ -22,7 +22,7 @@ df["ZeroBalance"] = (df["Balance"] == 0).map({True: "Zero balance", False: "Has 
 
 def churn_bar(col, n, labels=None):
     rate = df.groupby(col, observed=True)["Exited"].mean().mul(100).round(1)
-    fig, ax = plt.subplots(figsize=(max(6, 0.7 * len(rate) + 3), 4))
+    fig, ax = plt.subplots(figsize=(6.5, 4))  # same size for every chart
     ax.bar(range(len(rate)), rate.values, color="#4C78A8")
     ax.set_ylim(0, rate.max() * 1.18)
     for i, v in enumerate(rate):
